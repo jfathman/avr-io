@@ -1,0 +1,81 @@
+  alpine-install.txt
+
+    jfathman@alpine:~$ cat /etc/alpine-release
+    3.24.1
+
+    jfathman@alpine:~$ doas addgroup jfathman wheel
+    jfathman@alpine:~$ doas addgroup jfathman dialout
+    jfathman@alpine:~$ exit
+    jfathman@alpine:~$ groups
+    jfathman wheel dialout
+
+    jfathman@alpine:~$ doas apk add git
+    jfathman@alpine:~$ doas apk add gcc-avr
+    jfathman@alpine:~$ doas apk add binutils-avr
+    jfathman@alpine:~$ doas apk add avr-libc
+    jfathman@alpine:~$ doas apk add avrdude
+    jfathman@alpine:~$ doas apk add picocom
+    jfathman@alpine:~$ doas apk add lua5.5
+    jfathman@alpine:~$ doas apk add make
+    jfathman@alpine:~$ doas apk add less
+    jfathman@alpine:~$ doas apk add bash
+
+    jfathman@alpine:~$ avr-gcc --version | head -n 1
+    avr-gcc (Alpine Linux) 15.2.0
+
+    jfathman@alpine:~$ avrdude --version | head -n 1
+    Avrdude version 8.1
+
+    jfathman@alpine:~$ chsh (change to bash)
+
+    jfathman@alpine:~$ cat .profile 
+    <snip>
+    export BOARD=arduino_uno_r3
+    export PORT=/dev/ttyACM0
+    export BAUD=115200
+
+    jfathman@alpine:~/work/uno$ cat blink.cpp 
+    // blink.cpp
+
+    #ifndef F_CPU
+    #define F_CPU 16000000UL
+    #endif
+
+    #include <avr/io.h>
+    #include <util/delay.h>
+
+    int main(void)
+    {
+            DDRB |= (1 << PB5);       // Pin 13 (PB5) output
+
+            while (1) {
+                    PORTB |= (1 << PB5);  // LED On
+                    _delay_ms(500);
+
+                    PORTB &= ~(1 << PB5); // LED Off
+                    _delay_ms(500);
+            }
+
+            return 0;
+    }
+
+    jfathman@alpine:~/work/uno$ avr-gcc -mmcu=atmega328p -Wall -Os -o blink.elf blink.cpp
+
+    jfathman@alpine:~/work/uno$ ls -l
+    -rw-r--r--    1 jfathman jfathman       310 Jun 15 10:24 blink.cpp
+    -rwxr-xr-x    1 jfathman jfathman      9080 Jun 15 10:27 blink.elf
+
+    jfathman@alpine:~/work/uno$ avr-objcopy -j .text -j .data -O ihex blink.elf blink.hex
+
+    jfathman@alpine:~/work/uno$ ls -l
+    -rw-r--r--    1 jfathman jfathman       310 Jun 15 10:24 blink.cpp
+    -rwxr-xr-x    1 jfathman jfathman      9080 Jun 15 10:27 blink.elf
+    -rw-r--r--    1 jfathman jfathman       508 Jun 15 10:28 blink.hex
+
+    jfathman@alpine:~/work/uno$ avrdude -c arduino -p m328p -P /dev/ttyACM0 -b 115200 -U flash:w:blink.hex
+    Reading 176 bytes for flash from input file blink.hex
+    Writing 176 bytes to flash
+    Writing | ################################################## | 100% 0.07 s 
+    Reading | ################################################## | 100% 0.05 s 
+    176 bytes of flash verified
+    Avrdude done.  Thank you.

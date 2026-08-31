@@ -1,0 +1,12 @@
+  adc-caution.txt
+
+    ** CAUTION **
+
+    Before connecting an external voltage to AREF pin, be sure
+    to configure the software to use the external reference.
+
+    If an external voltage is applied to the AREF pin while
+    the MCU is still configured for the DEFAULT (5V) or INTERNAL
+    reference, the MCU will internally short its own reference
+    generator to the external reference, causing permanent damage
+    to the MCU.

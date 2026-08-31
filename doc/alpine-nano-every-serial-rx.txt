@@ -1,0 +1,161 @@
+
+  alpine-nano-every-serial-rx.txt
+
+  Serial transmit and receive example on atmega4809.
+
+    jfathman@alpine:~/work/every$ cat serial-rx.cpp 
+    // serial-rx.cpp
+
+    #define F_CPU 16000000UL
+
+    #include <avr/io.h>
+    #include <avr/interrupt.h>
+    #include <util/delay.h>
+    #include <ctype.h>
+
+    #define USART_BAUD_VALUE(baud) (((4UL * F_CPU) + ((baud) / 2)) / (baud))
+
+    #define BAUD_RATE 115200
+
+    void mcu_init(void)
+    {
+        CPU_CCP = CCP_IOREG_gc;   // Allow CLKCTRL change.
+        CLKCTRL.MCLKCTRLA = CLKCTRL_CLKSEL_OSC20M_gc; // Use internal oscillator.
+        
+        CPU_CCP = CCP_IOREG_gc;   // Allow CLKCTRL change.
+        CLKCTRL.MCLKCTRLB = 0x00; // Disable clock prescaler so mcu runs at 16 MHz.
+
+        // Route USART3 ALT1 pins (PB4 = TX, PB5 = RX) to SAMD11 USB serial.
+        PORTMUX.USARTROUTEA &= ~PORTMUX_USART3_gm;
+        PORTMUX.USARTROUTEA |=  PORTMUX_USART3_ALT1_gc;
+
+        PORTB.DIRSET = PIN4_bm; // Configure TX (PB4) as output.
+        PORTB.DIRCLR = PIN5_bm; // Configure RX (PB5) as input.
+
+        USART3.BAUD = (uint16_t) USART_BAUD_VALUE(BAUD_RATE);
+
+        USART3.CTRLC = USART_CMODE_ASYNCHRONOUS_gc // Async
+                     | USART_PMODE_DISABLED_gc     // No parity
+                     | USART_CHSIZE_8BIT_gc        // 8 data bits
+                     | USART_SBMODE_1BIT_gc;       // 1 stop bit
+
+        USART3.CTRLA = USART_RXCIE_bm; // Enable receive interrupt.
+
+        USART3.CTRLB = USART_TXEN_bm   // Enable transmit.
+                     | USART_RXEN_bm;  // Enable receive.
+
+        _delay_ms(10); // Allow time to stabilize.
+
+        sei();         // Enable global interrupts.
+    }
+
+    void serial_send_char(const char c)
+    {
+        // Wait for transmit buffer empty.
+        while (!(USART3.STATUS & USART_DREIF_bm))
+            ;
+
+        USART3.TXDATAL = c;
+    }
+
+    void serial_send_string(const char *str)
+    {
+        while (*str)
+        {
+            serial_send_char(*str++);
+        }
+    }
+
+    ISR(USART3_RXC_vect)
+    {
+        char c = USART3.RXDATAL;
+
+        serial_send_string("Received: ");
+
+        switch (c)
+        {
+            case ' ':
+                serial_send_string("<sp>");
+                break;
+            case '\r':
+                serial_send_string("<cr>");
+                break;
+            case '\n':
+                serial_send_string("<lf>");
+                break;
+            default:
+                serial_send_char(isprint(c) ? c : '.');
+        }
+
+        serial_send_string("\r\n");
+    }
+
+    int main(void)
+    {
+        mcu_init();
+        
+        PORTE.DIRSET = PIN2_bm; // Output
+        PORTE.OUTSET = PIN2_bm; // LED On
+
+        serial_send_string("hello from atmega4809\r\n");
+
+        for (;;)
+        {
+            _delay_ms(500);
+
+            PORTE.OUTTGL = PIN2_bm; // Toggle LED
+        }
+
+        return 0;
+    }
+
+
+    jfathman@alpine:~/work/every$ cat build-serial-rx.sh 
+    #!/bin/sh
+
+    set -x
+    set -e
+
+    avr-gcc -Wall -Os -mmcu=atmega4809 -DF_CPU=16000000UL -c serial-rx.cpp -o serial-rx.elf
+
+    avr-gcc -mmcu=atmega4809 serial-rx.elf -o serial-rx.out
+
+    avr-objcopy -O ihex -R .eeprom serial-rx.out serial-rx.hex
+
+    stty -F /dev/ttyACM0 1200  # trigger programming mode
+
+    sleep 0.5
+
+    avrdude -c jtag2updi -p atmega4809 -P /dev/ttyACM0 -U flash:w:serial-rx.hex:i
+
+
+    jfathman@alpine:~/work/every$ ./build-serial-rx.sh 
+    + set -e
+    + avr-gcc -Wall -Os '-mmcu=atmega4809' '-DF_CPU=16000000UL' -c serial-rx.cpp -o serial-rx.elf
+    + avr-gcc '-mmcu=atmega4809' serial-rx.elf -o serial-rx.out
+    + avr-objcopy -O ihex -R .eeprom serial-rx.out serial-rx.hex
+    + stty -F /dev/ttyACM0 1200
+    + sleep 0.5
+    + avrdude -c jtag2updi -p atmega4809 -P /dev/ttyACM0 -U flash:w:serial-rx.hex:i
+    Reading 582 bytes for flash from input file serial-rx.hex
+    Writing 582 bytes to flash
+    Writing | ################################################## | 100% 0.78 s 
+    Reading | ################################################## | 100% 0.79 s 
+    582 bytes of flash verified
+
+    Avrdude done.  Thank you.
+
+
+    jfathman@alpine:~/work/every$ ls -l serial-rx.*
+    -rw-r--r--    1 jfathman jfathman      2408 Aug 15 17:19 serial-rx.cpp
+    -rw-r--r--    1 jfathman jfathman      2216 Aug 15 17:22 serial-rx.elf
+    -rw-r--r--    1 jfathman jfathman      1671 Aug 15 17:22 serial-rx.hex
+    -rwxr-xr-x    1 jfathman jfathman     42820 Aug 15 17:22 serial-rx.out
+
+
+    jfathman@alpine:~$ picocom -q -b 115200 /dev/ttyACM0
+    hello from atmega4809
+    Received: a
+    Received: b
+    Received: c
+    Received: <cr>

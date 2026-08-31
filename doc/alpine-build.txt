@@ -1,0 +1,231 @@
+  alpine-build.txt
+
+    precondition: install-alpine.txt
+
+    jfathman@alpine:~$ grep CXXFLAGS .profile 
+    export CXXFLAGS="-std=c++26 -Wall -Werror -Wfatal-errors"
+
+    jfathman@alpine:~$ cat .gitconfig 
+    [user]
+            name = jfathman
+            email = jim.fathman@gmail.com
+    [credential]
+            helper = store
+
+    jfathman@alpine:~$ cat .git-credentials 
+    https://jfathman:github_pat_11AA<snip>8IWb@github.com
+
+    jfathman@alpine:~/work/git$ git clone https://github.com/jfathman/avr-io.git
+    Cloning into 'avr-io'...
+    <snip>
+
+    jfathman@alpine:~/work/git/avr-io[main]$ make clean
+    core
+    monitor
+    programs/adc
+    programs/asm-blink
+    programs/blink
+    programs/getchar
+    programs/pwm
+    programs/pwm-ramp
+
+    jfathman@alpine:~/work/git/avr-io[main]$ make all
+    core
+    compiling:  ./src/Analog.cpp
+    compiling:  ./src/coreError.cpp
+    compiling:  ./src/delay.cpp
+    compiling:  ./src/Digital.cpp
+    compiling:  ./src/Interval.cpp
+    compiling:  ./src/memory.cpp
+    compiling:  ./src/Serial.cpp
+    compiling:  ./src/Timer.cpp
+    compiling:  ./src/Watchdog.cpp
+    archiving:  lib/libcore.a
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    monitor
+    compiling:  ./src/commands.cpp
+    compiling:  ./src/commandAdc.cpp
+    compiling:  ./src/commandCrc.cpp
+    compiling:  ./src/commandDebug.cpp
+    compiling:  ./src/commandDelay.cpp
+    compiling:  ./src/commandDig.cpp
+    compiling:  ./src/commandDump.cpp
+    compiling:  ./src/commandEeprom.cpp
+    compiling:  ./src/commandFlash.cpp
+    compiling:  ./src/commandHeap.cpp
+    compiling:  ./src/commandId.cpp
+    compiling:  ./src/commandMap.cpp
+    compiling:  ./src/commandMem.cpp
+    compiling:  ./src/commandPwm.cpp
+    compiling:  ./src/commandReset.cpp
+    compiling:  ./src/commandStack.cpp
+    compiling:  ./src/commandSystem.cpp
+    compiling:  ./src/commandUptime.cpp
+    compiling:  ./src/commandVer.cpp
+    compiling:  ./src/globals.cpp
+    compiling:  ./src/main.cpp
+    compiling:  ./src/utils.cpp
+    linking:    monitor.elf
+    generating: monitor.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        de82
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    programs/adc
+    compiling:  adc.cpp
+    linking:    adc.elf
+    generating: adc.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        b1f8
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    programs/asm-blink
+    compiling:  asm-blink.cpp
+    compiling:  led.S
+    linking:    asm-blink.elf
+    generating: asm-blink.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        91da
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    programs/blink
+    compiling:  blink.cpp
+    linking:    blink.elf
+    generating: blink.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        c9e3
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    programs/getchar
+    compiling:  getchar.cpp
+    linking:    getchar.elf
+    generating: getchar.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        54b9
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    programs/pwm
+    compiling:  pwm.cpp
+    linking:    pwm.elf
+    generating: pwm.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        8c95
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    programs/pwm-ramp
+    compiling:  pwm-ramp.cpp
+    linking:    pwm-ramp.elf
+    generating: pwm-ramp.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        9902
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+
+    jfathman@alpine:~/work/git/avr-io/monitor[main]$ make clean run
+    compiling:  ./src/commands.cpp
+    compiling:  ./src/commandAdc.cpp
+    compiling:  ./src/commandCrc.cpp
+    compiling:  ./src/commandDebug.cpp
+    compiling:  ./src/commandDelay.cpp
+    compiling:  ./src/commandDig.cpp
+    compiling:  ./src/commandDump.cpp
+    compiling:  ./src/commandEeprom.cpp
+    compiling:  ./src/commandFlash.cpp
+    compiling:  ./src/commandHeap.cpp
+    compiling:  ./src/commandId.cpp
+    compiling:  ./src/commandMap.cpp
+    compiling:  ./src/commandMem.cpp
+    compiling:  ./src/commandPwm.cpp
+    compiling:  ./src/commandReset.cpp
+    compiling:  ./src/commandStack.cpp
+    compiling:  ./src/commandSystem.cpp
+    compiling:  ./src/commandUptime.cpp
+    compiling:  ./src/commandVer.cpp
+    compiling:  ./src/globals.cpp
+    compiling:  ./src/main.cpp
+    compiling:  ./src/utils.cpp
+    linking:    monitor.elf
+    generating: monitor.hex
+    version:    26.223.3
+    commit-id:  3609645
+    crc:        de82
+    board:      arduino_uno_r3
+    mcu:        atmega328p
+    stty -F /dev/ttyACM0 hupcl
+    avrdude -D \
+            -p atmega328p \
+            -c arduino \
+            -b 115200 \
+            -P /dev/ttyACM0 \
+            -U flash:w:build/monitor.hex:i
+    Reading 20140 bytes for flash from input file monitor.hex
+    Writing 20140 bytes to flash
+    Writing | ################################################## | 100% 3.93 s 
+    Reading | ################################################## | 100% 3.29 s 
+    20140 bytes of flash verified
+
+    Avrdude done.  Thank you.
+    stty -F /dev/ttyACM0 -hupcl
+
+    W:> help
+    ***********************************
+    **        AVR MCU Monitor        **
+    ***********************************
+      adc    init vcc|int|ext <v.v>
+      adc    <pin> read
+      dig    <pin> in|inpull|out
+      dig    <pin> on|off|set|clear|1|0
+      dig    <pin> toggle
+      dig    <pin> rda|rdc
+      pwm    <pin> 0-255|read
+      nop    no operation
+      delay  0-10000 (msec)
+      debug  on|off
+      map    memory map
+      mem    memory usage
+      heap   heap usage
+      stack  stack usage
+      flash  flash usage
+      crc    flash crc-16
+      eeprom erase|usage
+      id     erase|r|w <id>
+      dump   s|f|e|h <addr>
+      cont   continue dump
+      uptime since startup
+      clear  clear screen
+      reset  wdt reset
+      system system info
+      ver    version info
+      help   command menu
+      ?      command menu
+
+    W:> crc
+    de82
+
+    W:> system
+    board arduino_uno_r3
+    mcu   atmega328p
+    arch  avr5
+    clock 16 MHz
+
+    W:> ver
+    version  26.223.3
+    commit   3609645
+    gcc      15.2.0
+    c++      201703
+    avr libc 2.3.1

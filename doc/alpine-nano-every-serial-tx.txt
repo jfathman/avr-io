@@ -1,0 +1,124 @@
+
+  alpine-nano-every-serial-tx.txt
+
+  Serial transmit example (no receive) on atmega4809.
+
+    jfathman@alpine:~/work/every$ cat serial.cpp 
+    // serial.cpp
+
+    #define F_CPU 16000000UL
+
+    #include <avr/io.h>
+    #include <util/delay.h>
+
+    #define BAUD_RATE 115200
+
+    #define USART_BAUD_VALUE(baud) (((4UL * F_CPU) + ((baud) / 2)) / (baud))
+
+    void mcu_init(void)
+    {
+        CPU_CCP = CCP_IOREG_gc;
+        CLKCTRL.MCLKCTRLA = CLKCTRL_CLKSEL_OSC20M_gc; // Use internal oscillator.
+        
+        CPU_CCP = CCP_IOREG_gc;
+        CLKCTRL.MCLKCTRLB = 0x00; // Disable clock prescaler so runs at 16 MHz.
+
+        // Route USART3 ALT1 pins (PB4 = TX, PB5 = RX) to SAMD11 USB to serial converter.
+        PORTMUX.USARTROUTEA = (PORTMUX.USARTROUTEA & ~PORTMUX_USART3_gm) | PORTMUX_USART3_ALT1_gc;
+
+        PORTB.DIRSET = PIN4_bm; // Configure TX (PB4) as output.
+        PORTB.DIRCLR = PIN5_bm; // Configure RX (PB5) as input.
+
+        USART3.BAUD = (uint16_t) USART_BAUD_VALUE(BAUD_RATE);
+
+        // Configure no parity, 8 data bits, 1 stop bit.
+        USART3.CTRLC = USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc | USART_SBMODE_1BIT_gc;
+
+        USART3.CTRLB = USART_TXEN_bm; // Enable transmit.
+    }
+
+    void serial_send_char(const char c)
+    {
+        // Wait for transmit buffer empty.
+        while (!(USART3.STATUS & USART_DREIF_bm))
+            ;
+
+        USART3.TXDATAL = c;
+    }
+
+    void serial_send_string(const char *str)
+    {
+        while (*str)
+        {
+            serial_send_char(*str++);
+        }
+    }
+
+    int main(void)
+    {
+        mcu_init();
+        
+        PORTE.DIRSET = PIN2_bm; // LED
+
+        for (;;)
+        {
+            PORTE.OUTTGL = PIN2_bm; // Toggle LED
+
+            serial_send_string("hello from atmega4809\r\n");
+
+            _delay_ms(500);
+        }
+
+        return 0;
+    }
+
+
+    jfathman@alpine:~/work/every$ cat build-serial.sh 
+    #!/bin/sh
+
+    set -x
+    set -e
+
+    avr-gcc -Wall -Os -mmcu=atmega4809 -DF_CPU=16000000UL -c serial.cpp -o serial.elf
+
+    avr-gcc -mmcu=atmega4809 serial.elf -o serial.out
+
+    avr-objcopy -O ihex -R .eeprom serial.out serial.hex
+
+    stty -F /dev/ttyACM0 1200  # trigger programming mode
+
+    sleep 0.5
+
+    avrdude -c jtag2updi -p atmega4809 -P /dev/ttyACM0 -U flash:w:serial.hex:i
+
+
+    jfathman@alpine:~/work/every$ ./build-serial.sh 
+    + set -e
+    + avr-gcc -Wall -Os '-mmcu=atmega4809' '-DF_CPU=16000000UL' -c serial.cpp -o serial.elf
+    + avr-gcc '-mmcu=atmega4809' serial.elf -o serial.out
+    + avr-objcopy -O ihex -R .eeprom serial.out serial.hex
+    + stty -F /dev/ttyACM0 1200
+    + sleep 0.5
+    + avrdude -c jtag2updi -p atmega4809 -P /dev/ttyACM0 -U flash:w:serial.hex:i
+    Reading 356 bytes for flash from input file serial.hex
+    Writing 356 bytes to flash
+    Writing | ################################################## | 100% 0.54 s 
+    Reading | ################################################## | 100% 0.48 s 
+    356 bytes of flash verified
+
+    Avrdude done.  Thank you.
+
+
+    jfathman@alpine:~/work/every$ ls -l serial.*
+    -rw-r--r--    1 jfathman jfathman      1503 Aug 15 13:32 serial.cpp
+    -rw-r--r--    1 jfathman jfathman      1504 Aug 15 13:34 serial.elf
+    -rw-r--r--    1 jfathman jfathman      1024 Aug 15 13:34 serial.hex
+    -rwxr-xr-x    1 jfathman jfathman     42272 Aug 15 13:34 serial.out
+
+
+    jfathman@alpine:~$ picocom -q -b 115200 /dev/ttyACM0
+    hello from atmega4809
+    hello from atmega4809
+    hello from atmega4809
+    hello from atmega4809
+    hello from atmega4809

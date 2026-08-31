@@ -1,0 +1,7 @@
+  alpine-crontab.txt
+
+    jfathman@alpine:~$ crontab -e
+
+    jfathman@alpine:~$ doas cat /etc/crontabs/jfathman
+    # Must configure USB serial port for automatic capture in VirtualBox.
+    @reboot PORT="/dev/ttyACM0" BAUD="115200" /home/jfathman/work/git/avr-io/bin/port-init.sh

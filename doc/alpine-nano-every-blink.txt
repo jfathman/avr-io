@@ -1,0 +1,68 @@
+
+  alpine-nano-every-blink.txt 
+
+    jfathman@alpine:~/work/nano$ cat blink.cpp 
+    // blink.cpp
+
+    #define F_CPU 16000000UL
+    #include <avr/cpufunc.h>
+    #include <avr/io.h>
+    #include <util/delay.h>
+
+    int main(void) {
+        // Disable prescaler to run at F_CPU speed.
+        ccp_write_io((void *) &CLKCTRL.MCLKCTRLB, 0x00);
+
+        // Configure pin PE2 (D13 / LED_BUILTIN) as output
+        PORTE.DIRSET = PIN2_bm;
+
+        unsigned int msec = 500;
+
+        while (1) {
+            PORTE.OUTSET = PIN2_bm;  // LED On
+            _delay_ms(msec);
+
+            PORTE.OUTCLR = PIN2_bm;  // LED Off
+            _delay_ms(msec);
+        }
+
+        return 0;
+    }
+
+    jfathman@alpine:~/work/nano$ cat build.sh 
+    #!/bin/sh
+
+    set -x
+
+    avr-gcc -Wall -Os -mmcu=atmega4809 -DF_CPU=16000000UL -c blink.cpp -o blink.elf
+
+    avr-gcc -mmcu=atmega4809 blink.elf -o blink.out
+
+    avr-objcopy -O ihex -R .eeprom blink.out blink.hex
+
+    ls -l
+
+    stty -F /dev/ttyACM0 1200  # trigger programming mode
+
+    avrdude -c jtag2updi -p m4809 -P /dev/ttyACM0 -U flash:w:blink.hex:i
+
+    jfathman@alpine:~/work/nano$ ./build.sh 
+    + avr-gcc -Wall -Os '-mmcu=atmega4809' '-DF_CPU=16000000UL' -c blink.cpp -o blink.elf
+    + avr-gcc '-mmcu=atmega4809' blink.elf -o blink.out
+    + avr-objcopy -O ihex -R .eeprom blink.out blink.hex
+    + ls -l
+    total 60
+    -rw-r--r--    1 jfathman jfathman       519 Aug 12 12:29 blink.cpp
+    -rw-r--r--    1 jfathman jfathman      1076 Aug 12 12:33 blink.elf
+    -rw-r--r--    1 jfathman jfathman       721 Aug 12 12:33 blink.hex
+    -rwxr-xr-x    1 jfathman jfathman     41940 Aug 12 12:33 blink.out
+    -rwxr-xr-x    1 jfathman jfathman       332 Aug 12 12:32 build.sh
+    + stty -F /dev/ttyACM0 1200
+    + avrdude -c jtag2updi -p m4809 -P /dev/ttyACM0 -U flash:w:blink.hex:i
+    Reading 250 bytes for flash from input file blink.hex
+    Writing 250 bytes to flash
+    Writing | ################################################## | 100% 0.41 s 
+    Reading | ################################################## | 100% 0.32 s 
+    250 bytes of flash verified
+
+    Avrdude done.  Thank you.

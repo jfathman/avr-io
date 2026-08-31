@@ -1,0 +1,6 @@
+*.elf
+*.hex
+*.swp
+build/
+core/lib/
+node_modules/
