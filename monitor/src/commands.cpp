@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <avr/wdt.h>
 #include <coreError.h>
 #include "commands.h"
 #include "globals.h"
@@ -147,131 +148,136 @@ void process_commands(void)
 
     while (true)
     {
-        char c = get_char();
+        wdt_reset();
 
-        switch (c)
+        if (serial.available())
         {
-            case '\b':
-                if (num_chars > 0)
-                {
-                    printf_P(PSTR("\b \b"));
-                    num_chars--;
-                    cmdbuf[num_chars] = 0;
-                }
-                break;
+            char c = get_char();
 
-            // picocom sends \r when enter is pressed,
-            // emulating teletype carriage return key.
-
-            case '\r':
-                if (num_chars > 0)
-                {
-                    char *cmd = cmdbuf;
-
-                    // skip leading whitespace
-
-                    while (*cmd != 0 && isspace(*cmd))
+            switch (c)
+            {
+                case '\b':
+                    if (num_chars > 0)
                     {
-                        cmd++;
+                        printf_P(PSTR("\b \b"));
+                        num_chars--;
+                        cmdbuf[num_chars] = 0;
                     }
+                    break;
 
-                    // remove trailing whitespace
+                // picocom sends \r when enter is pressed,
+                // emulating teletype carriage return key.
 
-                    char *end = (char *) cmd + strlen(cmd) - 1;
-
-                    while(end > cmd && isspace(*end))
+                case '\r':
+                    if (num_chars > 0)
                     {
-                        *end-- = 0;
-                    }
+                        char *cmd = cmdbuf;
 
-                    if (strlen(cmd) > 0)
-                    {
-                        dispatch_command(cmd);
-                    }
+                        // skip leading whitespace
 
-                    if (strncmp_P(cmd, PSTR("dump"), 4) == 0)
-                    {
-                        memset(savbuf, 0, sizeof(savbuf));
-                        strncpy_P(savbuf, PSTR("cont"), sizeof(savbuf) - 1);
-                    }
-                    else if (strcmp_P(cmd, PSTR("clear")) != 0)
-                    {
-                        memset(savbuf, 0, sizeof(savbuf));
-                        strncpy(savbuf, cmdbuf, sizeof(savbuf) -1);
-                    }
-                }
-                else
-                {
-                    putchar('\n');
-                }
-                memset(cmdbuf, 0, sizeof(cmdbuf));
-                num_chars = 0;
-                prompt();
-                break;
-
-            case 0x1B: // escape
-                switch (interpret_escape_sequence())
-                {
-                    case ESC_SEQ_UP:     // up arrow key
-                        while (num_chars > 0)
+                        while (*cmd != 0 && isspace(*cmd))
                         {
-                            printf_P(PSTR("\b \b"));
-                            num_chars--;
+                            cmd++;
                         }
-                        strncpy(cmdbuf, savbuf, sizeof(cmdbuf) -1);
-                        printf_P(PSTR("%s"), cmdbuf);
-                        num_chars = strlen(cmdbuf);
-                        break;
 
-                    case ESC_SEQ_DOWN:   // down arrow key
-                        while (num_chars > 0)
+                        // remove trailing whitespace
+
+                        char *end = (char *) cmd + strlen(cmd) - 1;
+
+                        while(end > cmd && isspace(*end))
                         {
-                            printf_P(PSTR("\b \b"));
-                            num_chars--;
+                            *end-- = 0;
                         }
-                        memset(cmdbuf, 0, sizeof(cmdbuf));
-                        break;
 
-                    case ESC_SEQ_DELETE: // delete key
-                        if (num_chars > 0)
+                        if (strlen(cmd) > 0)
                         {
-                            printf_P(PSTR("\b \b"));
-                            num_chars--;
-                            cmdbuf[num_chars] = 0;
+                            dispatch_command(cmd);
                         }
-                        break;
 
-                    // Future use:
-                    // case ESC_SEQ_F1:  break;
-                    // case ESC_SEQ_F2:  break;
-                    // case ESC_SEQ_F3:  break;
-                    // case ESC_SEQ_F4:  break;
-                    // case ESC_SEQ_F5:  break;
-                    // case ESC_SEQ_F6:  break;
-                    // case ESC_SEQ_F7:  break;
-                    // case ESC_SEQ_F8:  break;
-                    // case ESC_SEQ_F9:  break;
-                    // case ESC_SEQ_F10: break;
-                    // case ESC_SEQ_F11: break;
-                    // case ESC_SEQ_F12: break;
-
-                    case ESC_SEQ_IGNORED:
-                        break;
-
-                    case ESC_SEQ_UNKNOWN:
-                        break;
-                }
-                break;
-
-            default:
-                if (num_chars < sizeof(cmdbuf) - 1)
-                {
-                    if (isprint(c))
-                    {
-                        cmdbuf[num_chars++] = c;
-                        putchar(c);
+                        if (strncmp_P(cmd, PSTR("dump"), 4) == 0)
+                        {
+                            memset(savbuf, 0, sizeof(savbuf));
+                            strncpy_P(savbuf, PSTR("cont"), sizeof(savbuf) - 1);
+                        }
+                        else if (strcmp_P(cmd, PSTR("clear")) != 0)
+                        {
+                            memset(savbuf, 0, sizeof(savbuf));
+                            strncpy(savbuf, cmdbuf, sizeof(savbuf) -1);
+                        }
                     }
-                }
+                    else
+                    {
+                        putchar('\n');
+                    }
+                    memset(cmdbuf, 0, sizeof(cmdbuf));
+                    num_chars = 0;
+                    prompt();
+                    break;
+
+                case 0x1B: // escape
+                    switch (interpret_escape_sequence())
+                    {
+                        case ESC_SEQ_UP:     // up arrow key
+                            while (num_chars > 0)
+                            {
+                                printf_P(PSTR("\b \b"));
+                                num_chars--;
+                            }
+                            strncpy(cmdbuf, savbuf, sizeof(cmdbuf) -1);
+                            printf_P(PSTR("%s"), cmdbuf);
+                            num_chars = strlen(cmdbuf);
+                            break;
+
+                        case ESC_SEQ_DOWN:   // down arrow key
+                            while (num_chars > 0)
+                            {
+                                printf_P(PSTR("\b \b"));
+                                num_chars--;
+                            }
+                            memset(cmdbuf, 0, sizeof(cmdbuf));
+                            break;
+
+                        case ESC_SEQ_DELETE: // delete key
+                            if (num_chars > 0)
+                            {
+                                printf_P(PSTR("\b \b"));
+                                num_chars--;
+                                cmdbuf[num_chars] = 0;
+                            }
+                            break;
+
+                        // Future use:
+                        // case ESC_SEQ_F1:  break;
+                        // case ESC_SEQ_F2:  break;
+                        // case ESC_SEQ_F3:  break;
+                        // case ESC_SEQ_F4:  break;
+                        // case ESC_SEQ_F5:  break;
+                        // case ESC_SEQ_F6:  break;
+                        // case ESC_SEQ_F7:  break;
+                        // case ESC_SEQ_F8:  break;
+                        // case ESC_SEQ_F9:  break;
+                        // case ESC_SEQ_F10: break;
+                        // case ESC_SEQ_F11: break;
+                        // case ESC_SEQ_F12: break;
+
+                        case ESC_SEQ_IGNORED:
+                            break;
+
+                        case ESC_SEQ_UNKNOWN:
+                            break;
+                    }
+                    break;
+
+                default:
+                    if (num_chars < sizeof(cmdbuf) - 1)
+                    {
+                        if (isprint(c))
+                        {
+                            cmdbuf[num_chars++] = c;
+                            putchar(c);
+                        }
+                    }
+            }
         }
     }
 }

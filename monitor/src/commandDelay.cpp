@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <avr/wdt.h>
 #include <util/delay.h>
 #include "commands.h"
 #include "globals.h"
@@ -28,7 +29,10 @@ void cmd_delay(const char *args, int argc)
                     printf_P(PSTR("delay aborted\n"));
                     return;
                 }
+
                 _delay_ms(1);
+
+                wdt_reset();
             }
 
             printf_P(PSTR("ok\n"));

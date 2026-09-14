@@ -18,6 +18,13 @@ void disable_wdt(void)
         MCUSR &= ~_BV(WDRF);
     #endif
 
+    #if defined(__AVR_ATmega4809__)
+        if (RSTCTRL.RSTFR & RSTCTRL_WDRF_bm)
+        {
+            RSTCTRL.RSTFR |= RSTCTRL_WDRF_bm; 
+        }
+    #endif
+
     wdt_disable();
 }
 
