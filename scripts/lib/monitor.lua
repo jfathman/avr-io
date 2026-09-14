@@ -132,6 +132,48 @@ function Monitor:pwm_read(pin)
     return value
 end
 
+function Monitor:lcd_init()
+    self:_send("lcd init")
+end
+
+function Monitor:lcd_home()
+    self:_send("lcd home")
+end
+
+function Monitor:lcd_cursor(row, col)
+    col = col or 1
+    self:_send(string.format("lcd cursor %u %u", row, col))
+end
+
+function Monitor:lcd_write(text)
+    text = text or ""
+    self:_send(string.format("lcd write %s", text))
+end
+
+function Monitor:lcd_clear(row)
+    if (row) then
+        self:_send(string.format("lcd clear %u", row))
+    else
+        self:_send("lcd clear")
+    end
+end
+
+function Monitor:lcd_display_off()
+    self:_send("lcd display off")
+end
+
+function Monitor:lcd_display_on()
+    self:_send("lcd display on")
+end
+
+function Monitor:lcd_backlight_off()
+    self:_send("lcd backlight off")
+end
+
+function Monitor:lcd_backlight_on()
+    self:_send("lcd backlight on")
+end
+
 function Monitor:send(command, callback)
     self.serial:send(command, function(line)
         if type(callback) == "function" then

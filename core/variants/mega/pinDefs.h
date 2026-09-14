@@ -115,6 +115,9 @@
 #define A14_PIN D68
 #define A15_PIN D69
 
+#define SDA D20
+#define SCL D21
+
 inline bool isDigPin(uint8_t pin)
 {
     return pin <= D69;

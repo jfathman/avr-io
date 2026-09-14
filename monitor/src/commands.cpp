@@ -66,6 +66,13 @@ MENU_ITEM( dig2,   "dig",    "<pin> on|off|set|clear|1|0" );
 MENU_ITEM( dig3,   "dig",    "<pin> toggle"               );
 MENU_ITEM( dig4,   "dig",    "<pin> rda|rdc"              );
 MENU_ITEM( pwm,    "pwm",    "<pin> 0-255|read"           );
+MENU_ITEM( i2c,    "i2c",    "i2c <beg> <end>"            );
+MENU_ITEM( lcd1,   "lcd",    "init"                       );
+MENU_ITEM( lcd2,   "lcd",    "display on|off"             );
+MENU_ITEM( lcd3,   "lcd",    "backlight on|off"           );
+MENU_ITEM( lcd4,   "lcd",    "clear <1|2>"                );
+MENU_ITEM( lcd5,   "lcd",    "cursor 1|2 <1-16>"          );
+MENU_ITEM( lcd6,   "lcd",    "write <text>"               );
 MENU_ITEM( nop,    "nop",    "no operation"               );
 MENU_ITEM( delay,  "delay",  "0-10000 (msec)"             );
 MENU_ITEM( debug,  "debug",  "on|off"                     );
@@ -102,6 +109,13 @@ static const menu_t menu[] PROGMEM = {
     { name_dig3,   cmd_dig,    2, 2, desc_dig3   },
     { name_dig4,   cmd_dig,    2, 2, desc_dig4   },
     { name_pwm,    cmd_pwm,    2, 2, desc_pwm    },
+    { name_i2c,    cmd_i2c,    0, 2, desc_i2c    },
+    { name_lcd1,   cmd_lcd,    1, 9, desc_lcd1   },
+    { name_lcd2,   cmd_lcd,    1, 9, desc_lcd2   },
+    { name_lcd3,   cmd_lcd,    1, 9, desc_lcd3   },
+    { name_lcd4,   cmd_lcd,    1, 9, desc_lcd4   },
+    { name_lcd5,   cmd_lcd,    1, 9, desc_lcd5   },
+    { name_lcd6,   cmd_lcd,    1, 9, desc_lcd6   },
     { name_nop,    cmd_nop,    0, 0, desc_nop    },
     { name_delay,  cmd_delay,  1, 1, desc_delay  },
     { name_debug,  cmd_debug,  0, 1, desc_debug  },
@@ -126,8 +140,8 @@ static const menu_t menu[] PROGMEM = {
 
 void process_commands(void)
 {
-    char cmdbuf[24] = { 0 };
-    char savbuf[24] = { 0 };
+    char cmdbuf[32] = { 0 };
+    char savbuf[32] = { 0 };
 
     uint8_t num_chars = 0;
 

@@ -42,6 +42,9 @@
 #define A6 6 // PD4
 #define A7 7 // PD5
 
+#define SDA D18
+#define SCL D19
+
 inline bool isDigPin(uint8_t pin)
 {
     return pin <= D21;

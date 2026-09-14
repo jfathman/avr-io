@@ -1,4 +1,4 @@
-# Makefile
+# program.mk
 
 VPATH_DIRS += .
 CORENAME   := core
@@ -30,7 +30,7 @@ init:
 
 $(BUILD_DIR)/$(PROGNAME).elf: $(OBJS) $(COREPATH)
 	@echo "linking:    $(PROGNAME).elf"
-	@$(CC) $(LDFLAGS) -static -o $@ $^ -lm -lc -l$(CORENAME)
+	@$(CC) $(LDFLAGS) -static -o $@ $^ -lm -lc -l$(CORENAME) $(LDLIBS)
 
 $(BUILD_DIR)/$(PROGNAME).hex: $(BUILD_DIR)/$(PROGNAME).elf
 	@echo "generating: $(PROGNAME).hex"
@@ -81,7 +81,7 @@ run: program flash picocom
 include $(PROJBASE)/mk/flash.mk
 
 help:
-	@echo "  all        build core and program"
+	@echo "  all        build all"
 	@echo "  program    build $(PROGNAME).hex"
 	@echo "  flash      write $(PROGNAME).hex to mcu flash memory"
 	@echo "  version    report program version"

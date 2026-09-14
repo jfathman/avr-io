@@ -45,6 +45,9 @@
 #define A4_PIN D18
 #define A5_PIN D19
 
+#define SDA D18
+#define SCL D19
+
 inline bool isDigPin(uint8_t pin)
 {
     return pin <= D19;

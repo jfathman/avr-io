@@ -5,6 +5,10 @@ BUILD_DIR  := build
 PROJBASE   := ..
 VPATH_DIRS := ./src
 
+INCLUDES   += -I$(PROJBASE)/drivers/lcd-hd44780/include
+LDFLAGS    += -L$(PROJBASE)/drivers/lcd-hd44780/lib
+LDLIBS     += -lcore -llcd-hd44780
+
 OBJS := $(BUILD_DIR)/commands.o
 OBJS += $(BUILD_DIR)/commandAdc.o
 OBJS += $(BUILD_DIR)/commandCrc.o
@@ -16,6 +20,8 @@ OBJS += $(BUILD_DIR)/commandEeprom.o
 OBJS += $(BUILD_DIR)/commandFlash.o
 OBJS += $(BUILD_DIR)/commandHeap.o
 OBJS += $(BUILD_DIR)/commandId.o
+OBJS += $(BUILD_DIR)/commandI2c.o
+OBJS += $(BUILD_DIR)/commandLcd.o
 OBJS += $(BUILD_DIR)/commandMap.o
 OBJS += $(BUILD_DIR)/commandMem.o
 OBJS += $(BUILD_DIR)/commandPwm.o

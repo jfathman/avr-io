@@ -1,6 +1,6 @@
 # Makefile
 
-SUBDIRS := core monitor programs/*
+SUBDIRS := core drivers/* programs/* monitor
 
 TOPTARGETS := all clean
 

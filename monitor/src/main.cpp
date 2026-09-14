@@ -11,7 +11,7 @@ int main(void)
 
     sramInit();
 
-    stackReserve(352);
+    stackReserve(384);
 
     timer.init();
 

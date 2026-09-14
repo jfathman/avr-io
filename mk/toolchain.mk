@@ -25,6 +25,7 @@ DEFINES   += -DBOARD=$(BOARD) # support string
 DEFINES   += -DMCU=$(MCU)
 DEFINES   += -DF_CPU=$(F_CPU)
 
+INCLUDES  += -I$(PROJBASE)/core/include
 INCLUDES  += -I$(PROJBASE)/core/variants/$(VARIANT)
 INCLUDES  += -I./include
 INCLUDES  += -I.
