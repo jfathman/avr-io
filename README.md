@@ -12,6 +12,18 @@ for long life with minimal churn.
 | ATmega2560 | Arduino Mega 2560  | 8 KB | 256 KB |
 | ATmega4809 | Arduino Nano Every | 6 KB | 48 KB  |
 
+
+| Peripheral |                    |
+| :--------- | :----------------: |
+| Digital    | :white_check_mark: |
+| Analog     | :white_check_mark: |
+| PWM        | :white_check_mark: |
+| I2C Write  | :white_check_mark: |
+| I2C Read   | :x:                |
+| SPI        | :x:                |
+
+:x: = Future feature
+
 **Provides:**
 
   * Core library
