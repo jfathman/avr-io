@@ -75,6 +75,7 @@ function run_commands()
 
     print()
 
+    expect.line_count_eq(10, "i2c")
     expect.response_line("nop",       "ok")
     expect.response_line("debug on",  "debug is on")
     expect.response_line("debug",     "debug is on")
