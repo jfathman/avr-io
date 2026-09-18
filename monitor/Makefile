@@ -7,7 +7,7 @@ VPATH_DIRS := ./src
 
 INCLUDES   += -I$(PROJBASE)/drivers/lcd-hd44780/include
 LDFLAGS    += -L$(PROJBASE)/drivers/lcd-hd44780/lib
-LDLIBS     += -lcore -llcd-hd44780
+LDLIBS     += -llcd-hd44780
 
 OBJS := $(BUILD_DIR)/commands.o
 OBJS += $(BUILD_DIR)/commandAdc.o

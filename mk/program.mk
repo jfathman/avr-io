@@ -30,7 +30,7 @@ init:
 
 $(BUILD_DIR)/$(PROGNAME).elf: $(OBJS) $(COREPATH)
 	@echo "linking:    $(PROGNAME).elf"
-	@$(CC) $(LDFLAGS) -static -o $@ $^ -lm -lc -l$(CORENAME) $(LDLIBS)
+	@$(CC) $(LDFLAGS) -static -o $@ $^ -lm -lc $(LDLIBS) -lcore
 
 $(BUILD_DIR)/$(PROGNAME).hex: $(BUILD_DIR)/$(PROGNAME).elf
 	@echo "generating: $(PROGNAME).hex"
