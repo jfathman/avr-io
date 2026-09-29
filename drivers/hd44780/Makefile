@@ -1,6 +1,6 @@
 # Makefile
 
-LIBRARY    := liblcd-hd44780.a
+LIBRARY    := libhd44780.a
 PROJBASE   := ../..
 BUILD_DIR  := ./build
 VPATH_DIRS := ./src
